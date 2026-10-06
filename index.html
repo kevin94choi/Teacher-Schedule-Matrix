@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Teacher Schedule & Swap Overlay</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #202124;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #1a73e8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: #f1f3f4;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select {
+            padding: 10px 14px;
+            font-size: 15px;
+            border-radius: 6px;
+            border: 1px solid #dadce0;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+        }
+        select:focus {
+            border-color: #1a73e8;
+        }
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+        .box-busy { background-color: #fce8e6; border: 1px solid #fad2cf; }
+        .box-take { background-color: #e6f4ea; border: 1px solid #ceead6; }
+        .box-conflict { background-color: #feefc3; border: 1px solid #fde293; }
+        .box-free { background-color: #f8f9fa; border: 1px solid #dadce0; }
+        .box-single { background-color: #e8f0fe; border: 1px solid #aecbfa; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            height: 52px;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f1f3f4;
+            font-weight: 600;
+            color: #3c4043;
+        }
+        .period-col {
+            font-weight: 600;
+            background-color: #f8f9fa;
+            width: 130px;
+            font-size: 13px;
+            color: #3c4043;
+            line-height: 1.4;
+        }
+        .period-time {
+            font-size: 11px;
+            font-weight: normal;
+            color: #70757a;
+            display: block;
+        }
+        .cell-busy {
+            background-color: #fce8e6;
+            color: #c5221f;
+            font-weight: 600;
+        }
+        .cell-take {
+            background-color: #e6f4ea;
+            color: #137333;
+            font-weight: bold;
+            border: 2px solid #34a853 !important;
+        }
+        .cell-conflict {
+            background-color: #feefc3;
+            color: #b06000;
+        }
+        .cell-free {
+            background-color: #ffffff;
+            color: #80868b;
+        }
+        .cell-single {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+        .sub-text {
+            font-size: 11px;
+            font-weight: normal;
+            display: block;
+            margin-top: 2px;
+            opacity: 0.85;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        .badge-take { background: #34a853; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🗓️ English Teacher Schedule & Class Swap Overlay</h1>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="viewMode">Display View Mode</label>
+            <select id="viewMode" onchange="toggleViewMode()">
+                <option value="overlay">Cross-Reference Overlay (Swap Finder)</option>
+                <option value="my_only">Only My Schedule</option>
+                <option value="teacher_only">Only Target Teacher's Schedule</option>
+            </select>
+        </div>
+
+        <div class="control-group" id="weekSelectGroup">
+            <label for="weekSelect">My Teaching Week</label>
+            <select id="weekSelect" onchange="renderSchedule()">
+                <option value="w1">Week A (1st Grade Rotation)</option>
+                <option value="w2">Week B (2nd Grade Rotation)</option>
+            </select>
+        </div>
+        
+        <div class="control-group" id="teacherSelectGroup">
+            <label for="teacherSelect">Target Teacher</label>
+            <select id="teacherSelect" onchange="renderSchedule()">
+                <option value="신혜정">신혜정 (Grade 1)</option>
+                <option value="백승준">백승준 (Grade 2)</option>
+                <option value="조아라">조아라 (Grades 1 & 2)</option>
+                <option value="방영식">방영식 (Grade 3)</option>
+                <option value="장동준">장동준 (Grade 3)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="legend" id="legendContainer">
+        <!-- Dynamic Legend -->
+    </div>
+
+    <table id="scheduleTable">
+        <thead>
+            <tr>
+                <th class="period-col">Period & Time</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<script>
+const kevinW1 = {
+    'Mon': {1: '3-7', 2: '', 3: '3-2', 4: '', 5: '1-2', 6: '', 7: '방과후'},
+    'Tue': {1: '', 2: '3-3', 3: '3-1', 4: '', 5: '', 6: '1-4', 7: '1-5'},
+    'Wed': {1: '', 2: '3-10', 3: '3-8', 4: '', 5: '3-6', 6: '1-6', 7: ''},
+    'Thu': {1: '3-4', 2: '1-1', 3: '', 4: '', 5: '', 6: '3-9', 7: ''},
+    'Fri': {1: '1-3', 2: '1-7', 3: '', 4: '', 5: '', 6: '3-5', 7: '방과후'}
+};
+
+const kevinW2 = {
+    'Mon': {1: '3-7', 2: '2-10', 3: '3-2', 4: '', 5: '', 6: '2-5', 7: '방과후'},
+    'Tue': {1: '', 2: '3-3', 3: '3-1', 4: '', 5: '', 6: '2-3', 7: '2-9'},
+    'Wed': {1: '2-4', 2: '3-10', 3: '3-8', 4: '', 5: '3-6', 6: '', 7: ''},
+    'Thu': {1: '3-4', 2: '2-8', 3: '', 4: '2-1', 5: '', 6: '3-9', 7: ''},
+    'Fri': {1: '', 2: '2-6', 3: '2-2', 4: '', 5: '2-7', 6: '3-5', 7: '방과후'}
+};
+
+const teachers = {
+    '신혜정': {
+        'Mon': {1:'', 2:'', 3:'', 4:'1-1', 5:'1-2', 6:'', 7:''},
+        'Tue': {1:'', 2:'1-6', 3:'', 4:'1-2', 5:'', 6:'1-4', 7:''},
+        'Wed': {1:'1-5', 2:'1-3', 3:'1-3', 4:'', 5:'1-4', 6:'1-6', 7:''},
+        'Thu': {1:'1-5', 2:'1-1', 3:'1-4', 4:'', 5:'1-6', 6:'', 7:''},
+        'Fri': {1:'1-3', 2:'1-2', 3:'', 4:'1-1', 5:'', 6:'', 7:''}
+    },
+    '백승준': {
+        'Mon': {1:'2-3', 2:'2-1', 3:'', 4:'', 5:'2-2', 6:'2-5', 7:''},
+        'Tue': {1:'', 2:'', 3:'2-5', 4:'2-6', 5:'', 6:'2-3', 7:'2-4'},
+        'Wed': {1:'2-4', 2:'', 3:'', 4:'2-1', 5:'', 6:'', 7:''},
+        'Thu': {1:'2-6', 2:'', 3:'', 4:'2-1', 5:'2-5', 6:'', 7:'2-2'},
+        'Fri': {1:'', 2:'2-6', 3:'2-2', 4:'', 5:'2-3', 6:'2-4', 7:''}
+    },
+    '조아라': {
+        'Mon': {1:'', 2:'2-10', 3:'3-2', 4:'', 5:'2-8', 6:'2-7', 7:''},
+        'Tue': {1:'2-7', 2:'', 3:'', 4:'1-7', 5:'', 6:'2-10', 7:'2-9'},
+        'Wed': {1:'', 2:'2-8', 3:'', 4:'2-9', 5:'', 6:'1-7', 7:''},
+        'Thu': {1:'3-4', 2:'2-8', 3:'', 4:'', 5:'2-9', 6:'', 7:''},
+        'Fri': {1:'', 2:'1-7', 3:'', 4:'2-10', 5:'2-7', 6:'', 7:''}
+    },
+    '방영식': {
+        'Mon': {1:'3-8', 2:'', 3:'3-10', 4:'', 5:'', 6:'3-4', 7:''},
+        'Tue': {1:'3-2', 2:'3-10', 3:'', 4:'3-4', 5:'3-6', 6:'', 7:''},
+        'Wed': {1:'', 2:'3-10', 3:'3-8', 4:'', 5:'3-6', 6:'3-4', 7:''},
+        'Thu': {1:'', 2:'3-6', 3:'', 4:'3-2', 5:'', 6:'3-8', 7:'3-10'},
+        'Fri': {1:'', 2:'3-8', 3:'3-2', 4:'', 5:'3-6', 6:'', 7:''}
+    },
+    '장동준': {
+        'Mon': {1:'3-7', 2:'', 3:'', 4:'3-5', 5:'3-1', 6:'', 7:''},
+        'Tue': {1:'3-7', 2:'3-3', 3:'3-1', 4:'', 5:'3-9', 6:'', 7:''},
+        'Wed': {1:'3-5', 2:'3-1', 3:'', 4:'3-7', 5:'3-3', 6:'3-9', 7:''},
+        'Thu': {1:'', 2:'3-5', 3:'3-3', 4:'', 5:'3-7', 6:'3-9', 7:''},
+        'Fri': {1:'3-1', 2:'', 3:'3-9', 4:'3-3', 5:'', 6:'3-5', 7:''}
+    }
+};
+
+const periodTimes = {
+    1: '9:10 - 9:55',
+    2: '10:05 - 10:50',
+    3: '11:00 - 11:45',
+    4: '11:55 - 12:40',
+    5: '1:35 - 2:20',
+    6: '2:30 - 3:15',
+    7: '3:25 - 4:10'
+};
+
+const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const periods = [1, 2, 3, 4, 5, 6, 7];
+
+function toggleViewMode() {
+    const mode = document.getElementById('viewMode').value;
+    const weekGroup = document.getElementById('weekSelectGroup');
+    const teacherGroup = document.getElementById('teacherSelectGroup');
+
+    if (mode === 'my_only') {
+        weekGroup.style.display = 'flex';
+        teacherGroup.style.display = 'none';
+    } else if (mode === 'teacher_only') {
+        weekGroup.style.display = 'none';
+        teacherGroup.style.display = 'flex';
+    } else {
+        weekGroup.style.display = 'flex';
+        teacherGroup.style.display = 'flex';
+    }
+    renderSchedule();
+}
+
+function renderSchedule() {
+    const mode = document.getElementById('viewMode').value;
+    const week = document.getElementById('weekSelect').value;
+    const teacherName = document.getElementById('teacherSelect').value;
+    const kevinSched = week === 'w1' ? kevinW1 : kevinW2;
+    const teacherSched = teachers[teacherName];
+
+    const legendContainer = document.getElementById('legendContainer');
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    // Render Legend based on mode
+    if (mode === 'my_only') {
+        legendContainer.innerHTML = `
+            <div class="legend-item"><div class="legend-box box-single"></div> <strong>YOUR CLASS</strong></div>
+            <div class="legend-item"><div class="legend-box box-free"></div> <strong>FREE PERIOD</strong></div>
+        `;
+    } else if (mode === 'teacher_only') {
+        legendContainer.innerHTML = `
+            <div class="legend-item"><div class="legend-box box-single"></div> <strong>${teacherName}'s CLASS</strong></div>
+            <div class="legend-item"><div class="legend-box box-free"></div> <strong>FREE PERIOD</strong></div>
+        `;
+    } else {
+        legendContainer.innerHTML = `
+            <div class="legend-item"><div class="legend-box box-take"></div> <strong>CAN TAKE CLASS</strong> (You are free & they have class)</div>
+            <div class="legend-item"><div class="legend-box box-busy"></div> <strong>YOU ARE BUSY</strong> (You teach 3rd/1st/2nd)</div>
+            <div class="legend-item"><div class="legend-box box-conflict"></div> <strong>BOTH BUSY</strong> (Schedule Overlay Conflict)</div>
+            <div class="legend-item"><div class="legend-box box-free"></div> <strong>BOTH FREE</strong></div>
+        `;
+    }
+
+    periods.forEach(p => {
+        const tr = document.createElement('tr');
+        
+        const tdPeriod = document.createElement('td');
+        tdPeriod.className = 'period-col';
+        tdPeriod.innerHTML = `Period ${p}<span class="period-time">${periodTimes[p]}</span>`;
+        tr.appendChild(tdPeriod);
+
+        days.forEach(d => {
+            const td = document.createElement('td');
+            const kVal = kevinSched[d][p] || '';
+            const tVal = teacherSched[d][p] || '';
+
+            if (mode === 'my_only') {
+                if (kVal !== '') {
+                    td.className = 'cell-single';
+                    td.innerHTML = `<strong>${kVal}</strong>`;
+                } else {
+                    td.className = 'cell-free';
+                    td.innerHTML = `-`;
+                }
+            } else if (mode === 'teacher_only') {
+                if (tVal !== '') {
+                    td.className = 'cell-single';
+                    td.innerHTML = `<strong>${tVal}</strong>`;
+                } else {
+                    td.className = 'cell-free';
+                    td.innerHTML = `-`;
+                }
+            } else {
+                // Overlay mode
+                if (kVal !== '' && tVal !== '') {
+                    td.className = 'cell-conflict';
+                    td.innerHTML = `<strong>You: ${kVal}</strong><span class="sub-text">${teacherName}: ${tVal}</span>`;
+                } else if (kVal !== '') {
+                    td.className = 'cell-busy';
+                    td.innerHTML = `<strong>${kVal}</strong><span class="sub-text">You are teaching</span>`;
+                } else if (tVal !== '') {
+                    td.className = 'cell-take';
+                    td.innerHTML = `<strong>TAKE CLASS</strong><span class="sub-text">${teacherName} (${tVal})</span><span class="badge badge-take">AVAILABLE</span>`;
+                } else {
+                    td.className = 'cell-free';
+                    td.innerHTML = `-`;
+                }
+            }
+
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    });
+}
+
+toggleViewMode();
+</script>
+
+</body>
+</html>
